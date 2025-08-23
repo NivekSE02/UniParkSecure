@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - UniParkSecure</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/UniParkSecure.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #f4f6f8;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            position: relative;
+        }
+        header {
+            background-color: #B22222;
+            height: 60px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        main {
+            flex: 1;
+            padding-top: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+        }
+        footer {
+            background-color: #1C1C1C;
+            color: #fff;
+            text-align: center;
+            padding: 2.5rem 0;
+            width: 100%;
+            position: relative;
+            bottom: 0;
+            margin-top: auto;
+        }
+        footer img {
+            max-width: 200px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        a {
+            color: #fff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+
+</head>
+<body>
+    <ul class="nav">
+    @if (User.IsInRole("Admin"))
+    {
+        <li><a href="@Url.Action("DashboardAdmin","Home")">Admin</a></li>
+        <li><a href="@Url.Action("DashboardCam","Home")">Cam</a></li>
+    }
+
+    @if (User.IsInRole("UsuarioComun") || User.IsInRole("Admin"))
+    {
+        <li><a href="@Url.Action("DashboardParqueos","Home")">Parqueos</a></li>
+    }
+</ul>
+
+    <header></header>
+    <main>
+        @RenderBody()
+    </main>
+    <footer>
+        <img src="https://catolica.edu.sv/wp-content/uploads/2025/03/LOGO_UNICAES_1.png" alt="UNICAES Logo">
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

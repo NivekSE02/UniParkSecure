@@ -1,0 +1,259 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Parqueos";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,width=device-width">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .dashboard-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 80px 20px 40px 20px;
+    }
+
+    .nav-tabs {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        list-style: none;
+        margin-bottom: 40px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 60px;
+        flex-wrap: wrap;
+    }
+
+    .nav-tabs a {
+        text-decoration: none;
+        color: #555;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: color 0.3s, background 0.3s;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+    }
+
+    .nav-tabs a:hover {
+        color: #1bb0ce;
+        background: #f3f4f6;
+    }
+
+    .nav-tabs a.active {
+        color: #1bb0ce;
+        background: #e6f3f8;
+    }
+
+    .user-profile {
+        position: absolute;
+        top: 50%;
+        right: 2rem;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        z-index: 20;
+    }
+
+    .user-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        color: #4b5563;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .user-button:hover {
+        background: #e6f3f8;
+        color: #1bb0ce;
+    }
+
+    .user-button svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 20;
+        min-width: 150px;
+    }
+
+    .dropdown-menu.show {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: block;
+        padding: 0.5rem 1rem;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        color: #4b5563;
+        text-decoration: none;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background: #e6f3f8;
+        color: #1bb0ce;
+    }
+
+    .parking-map-wrapper {
+        position: relative;
+        display: inline-block;
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .parking-map-wrapper img {
+        width: 100%;
+        display: block;
+        border-radius: 12px;
+    }
+
+    .sector {
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: rgba(0, 123, 255, 0.5);
+        cursor: pointer;
+        transition: background 0.3s, transform 0.3s;
+        z-index: 2;
+    }
+
+    .sector:hover {
+        background: rgba(0, 123, 255, 0.9);
+        transform: scale(1.5);
+    }
+
+    #tooltip {
+        position: absolute;
+        display: none;
+        padding: 6px 12px;
+        background: #fff;
+        border: 1px solid #333;
+        border-radius: 6px;
+        pointer-events: none;
+        z-index: 10;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="nav-tabs">
+        <div class="nav-links">
+            <a href="@Url.Action("DashboardAdmin", "Historial")">Historial</a>
+            <a href="@Url.Action("DashboardEntrada", "Home")">Entrada</a>
+            <a href="@Url.Action("DashboardSalida", "Home")">Salida</a>
+            <a href="@Url.Action("DashboardParqueos", "Home")" class="active">Parqueos</a>
+        </div>
+        <div class="user-profile">
+            <button class="user-button">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>@(ViewBag.UserName ?? "Usuario")</span>
+            </button>
+            <div class="dropdown-menu">
+                <a href="/Home/Login" class="dropdown-item">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2>Mapa de Parqueos</h2>
+
+        <div class="parking-map-wrapper">
+            <img src="/images/unicaes-map.png" alt="Mapa UNICAES">
+
+            <div class="sector" style="top:2.4%; left:61.7%;" data-title="Biblioteca 1: 25 parqueos"></div>
+            <div class="sector" style="top:1.5%; left:61.4%;" data-title="Biblioteca 1: 25 parqueos"></div>
+            <div class="sector" style="top:4.3%; left:63.6%;" data-title="Colegio: 30 parqueos"></div>
+            <div class="sector" style="top:13.0%; left:62.6%;" data-title="Biblioteca 2: 20 parqueos"></div>
+            <div class="sector" style="top:16.9%; left:63.0%;" data-title="Edificio A: 40 parqueos"></div>
+            <div class="sector" style="top:19.6%; left:62.8%;" data-title="Edificio B: 35 parqueos"></div>
+            <div class="sector" style="top:25.5%; left:62.7%;" data-title="Edificio C: 30 parqueos"></div>
+            <div class="sector" style="top:44.5%; left:62.9%;" data-title="Edificio E: 25 parqueos"></div>
+            <div class="sector" style="top:65.2%; left:67.8%;" data-title="Edificio G: 15 parqueos"></div>
+
+            <div id="tooltip"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tooltip = document.getElementById('tooltip');
+
+    document.querySelectorAll('.sector').forEach(sec => {
+        sec.addEventListener('mouseenter', e => {
+            tooltip.style.display = 'block';
+            tooltip.innerText = sec.dataset.title;
+        });
+        sec.addEventListener('mousemove', e => {
+            tooltip.style.top = (e.pageY - 30) + 'px';
+            tooltip.style.left = e.pageX + 'px';
+        });
+        sec.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+        });
+        sec.addEventListener('click', () => {
+            alert(sec.dataset.title);
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const userButton = document.querySelector('.user-button');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        if (userButton && dropdownMenu) {
+            userButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                dropdownMenu.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!userButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
+

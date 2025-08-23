@@ -1,0 +1,159 @@
+﻿@{
+    ViewData["Title"] = "Elegir Sector";
+}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #222;
+        margin: 30px 0;
+    }
+
+    #sectores {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .sector-group {
+        display: contents;
+    }
+
+    .sector-btn {
+        padding: 20px 16px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        background: #6c757d;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sector-btn:hover {
+        background: #5a6268;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .sector-btn[data-type="biblioteca"]::before {
+        content: "📚";
+        margin-right: 8px;
+    }
+
+    .sector-btn[data-type="colegio"]::before {
+        content: "🏫";
+        margin-right: 8px;
+    }
+
+    .sector-btn[data-type="edificio"]::before {
+        content: "🏢";
+        margin-right: 8px;
+    }
+
+    #mensaje {
+        margin-top: 30px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #222;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @@media (max-width: 768px) {
+        #sectores {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .sector-btn {
+            padding: 16px 12px;
+            font-size: 1rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        #sectores {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div>
+    <h2>Seleccione el sector al que se dirige</h2>
+
+    <div id="sectores">
+        <div class="sector-group">
+            <button class="sector-btn" data-type="biblioteca" onclick="seleccionarSector(1)">Biblioteca 1</button>
+            <button class="sector-btn" data-type="biblioteca" onclick="seleccionarSector(3)">Biblioteca 2</button>
+        </div>
+        <div class="sector-group">
+            <button class="sector-btn" data-type="colegio" onclick="seleccionarSector(2)">Colegio</button>
+        </div>
+        <div class="sector-group">
+            <button class="sector-btn" data-type="edificio" onclick="seleccionarSector(4)">Edificio A</button>
+            <button class="sector-btn" data-type="edificio" onclick="seleccionarSector(5)">Edificio B</button>
+            <button class="sector-btn" data-type="edificio" onclick="seleccionarSector(6)">Edificio C</button>
+            <button class="sector-btn" data-type="edificio" onclick="seleccionarSector(7)">Edificio E</button>
+            <button class="sector-btn" data-type="edificio" onclick="seleccionarSector(8)">Edificio G</button>
+        </div>
+    </div>
+
+    <div id="mensaje"></div>
+</div>
+
+<script>
+async function seleccionarSector(sectorId) {
+    const email = "@ViewBag.Email";
+    const msgDiv = document.getElementById("mensaje");
+
+    try {
+        const response = await fetch('/Registros/ConfirmarSector', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, sectorId: sectorId })
+        });
+
+        const data = await response.json();
+        msgDiv.innerText = data.mensaje;
+
+        if (response.ok) {
+            setTimeout(() => {
+                window.location.href = "/Home/DashboardCam?modo=entrada";
+            }, 3000);
+        }
+    } catch (error) {
+        msgDiv.innerText = "Error de conexión. Intente de nuevo.";
+    }
+}
+</script>

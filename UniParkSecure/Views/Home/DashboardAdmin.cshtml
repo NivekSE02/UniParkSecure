@@ -1,0 +1,291 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Admin";
+    var historial = ViewBag.Historial as List<dynamic>;
+    var usuario = Context.Request.Query["usuario"];
+    var fecha = Context.Request.Query["fecha"];
+    var hora = Context.Request.Query["hora"];
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,width=device-width">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .dashboard-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 60px 20px 40px 20px;
+    }
+
+    .nav-tabs {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 60px;
+        padding: 1rem 2rem;
+        list-style: none;
+        margin-bottom: 40px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: relative; /* Required for user-profile positioning */
+    }
+
+   .nav-tabs {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        list-style: none;
+        margin-bottom: 40px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 60px;
+        flex-wrap: wrap;
+    }
+
+    .user-profile {
+        position: absolute;
+        top: 50%;
+        right: 2rem;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        z-index: 20;
+    }
+
+    .user-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        color: #4b5563;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .user-button:hover {
+        background: #e6f3f8;
+        color: #1bb0ce;
+    }
+
+    .user-button svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 20;
+        min-width: 150px;
+    }
+
+    .dropdown-menu.show {
+        display: block;
+    }
+
+   .dropdown-item:hover {
+        background: #e6f3f8;
+        color: #1bb0ce;
+    }
+
+    .dashboard-content {
+        text-align: center;
+    }
+
+    .card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+        margin-bottom: 20px;
+        word-wrap: break-word;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        margin-top: 30px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    th, td {
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+        background-color: #f1f3f5;
+        font-weight: 600;
+        color: #444;
+    }
+
+    tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .filter-form input,
+    .filter-form select,
+    .filter-form button {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .filter-form button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .filter-form button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+   <div class="nav-tabs">
+    <div class="nav-links">
+        <a href="@Url.Action("DashboardAdmin", "Home")" class="active">Historial</a>
+        <a href="@Url.Action("DashboardEntrada", "Home")">Entrada</a>
+        <a href="@Url.Action("DashboardSalida", "Home")">Salida</a>
+        <a href="@Url.Action("DashboardParqueos", "Home")">Parqueos</a>
+    </div>
+    <div class="user-profile">
+        <button class="user-button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>@(ViewBag.UserName ?? "Usuario")</span>
+        </button>
+        <div class="dropdown-menu">
+            <a href="/Home/Login" class="dropdown-item">Cerrar sesión</a>
+        </div>
+    </div>
+</div>
+
+    <div class="dashboard-content">
+        <h1>Historial</h1>
+
+        <div class="card">
+            <form class="filter-form" method="get" asp-action="DashboardAdmin">
+                <input type="text" name="usuario" placeholder="Buscar por usuario" value="@usuario" />
+                <input type="date" name="fecha" value="@fecha" />
+                <input type="time" name="hora" value="@hora" />
+                <button type="submit">Filtrar</button>
+            </form>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            
+                            <th>DUI</th>
+                            <th>Placa</th>
+                            <th>Hora Entrada</th>
+                            <th>Hora Salida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (historial != null && historial.Count > 0)
+                        {
+                            foreach (var item in historial)
+                            {
+                                <tr>
+                                    <td>@item.Nombre</td>
+                                    <td>@item.DUI</td>
+                                    <td>@item.Placa</td>
+                                    <td>@item.HoraEntrada</td>
+                                    <td>@item.HoraSalida</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:#777;">
+                                    No hay registros disponibles.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+   document.addEventListener('DOMContentLoaded', () => {
+        const userButton = document.querySelector('.user-button');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        if (userButton && dropdownMenu) {
+            userButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                dropdownMenu.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!userButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                    }
+            });
+        }
+    });
+</script>
+</body>
+</html>

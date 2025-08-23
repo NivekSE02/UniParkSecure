@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/parqueoHub")
+    .build();
+
+connection.on("ActualizarDisponibilidad", (sector, disponibles) => {
+    document.getElementById(`disponibles-${sector}`).innerText = disponibles;
+});
+
+connection.start().catch(err => console.error(err.toString()));

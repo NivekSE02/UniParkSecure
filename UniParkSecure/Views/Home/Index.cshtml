@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<h1 class="text-center mb-4">UniParkSecure</h1>
+<p class="text-center lead">Controla y visualiza la disponibilidad de estacionamientos en tiempo real.</p>
+
+<div class="text-center mt-5">
+    <a asp-area="" asp-controller="Disponibilidad" asp-action="Index" class="btn btn-primary btn-lg">
+        Ver Mapa
+    </a>
+</div>
+
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/parqueoHub")
+            .build();
+
+        connection.on("ActualizarDisponibilidad", (sector, disponibles) => {
+            const elem = document.getElementById(`disponibles-${sector}`);
+            if (elem) elem.innerText = disponibles;
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+    </script>
+}

@@ -1,0 +1,52 @@
+﻿@model IEnumerable<UniParkSecure.Models.Sector>
+@{
+    ViewData["Title"] = "Mapa de Disponibilidad";
+}
+<h1>Mapa de Disponibilidad</h1>
+<div class="sector-container">
+    @foreach (var sector in Model)
+    {
+        <div class="sector">
+            <h3>Sector @sector.Nombre</h3>
+            <p>Capacidad: @sector.TotalEspacios</p>
+            <p>Disponibles: <span id="disponibles-@sector.Nombre">@sector.Disponibles</span></p>
+        </div>
+    }
+</div>
+
+
+<style>
+    .sector-container {
+        display: flex;
+        gap: 20px;
+    }
+    .sector {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        width: 150px;
+    }
+    .sector.low { background-color: #ffcccc; } /* Pocos espacios */
+    .sector.full { background-color: #ff6666; } /* Lleno */
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/parqueoHub")
+        .build();
+
+    connection.on("ActualizarDisponibilidad", (sector, disponibles) => {
+        const span = document.getElementById(`disponibles-${sector}`);
+        span.innerText = disponibles;
+        const sectorDiv = span.closest('.sector');
+        sectorDiv.classList.remove('low', 'full');
+        if (disponibles === 0) {
+            sectorDiv.classList.add('full');
+        } else if (disponibles <= 5) {
+            sectorDiv.classList.add('low');
+        }
+    });
+
+    connection.start().catch(err => console.error(err.toString()));
+</script>

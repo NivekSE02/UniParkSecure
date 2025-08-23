@@ -1,0 +1,303 @@
+﻿@model UniParkSecure.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Registro de Usuario";
+}
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+       background: #1a1a1a;
+
+
+        background-size: cover;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    body::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 0;
+    }
+
+    .register-container {
+        position: relative;
+        z-index: 1;
+        background: rgba(30, 30, 30, 0.9);
+        border-radius: 16px;
+        padding: 40px;
+        width: 100%;
+        max-width: 600px;
+        color: #f1f1f1;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.8s ease;
+    }
+
+    .register-container h2 {
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 25px;
+        color: #ffffff;
+        font-weight: bold;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-control {
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 10px;
+        padding: 14px;
+        color: #fff;
+        transition: all 0.3s;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        background: #333;
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 8px rgba(13, 110, 253, 0.6);
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        border: none;
+        transition: all 0.3s;
+        color: #fff;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #0b5ed7, #084298);
+    }
+
+    .card-camera {
+        background: rgba(40, 40, 40, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        margin-top: 20px;
+        color: #fff;
+        position: relative;
+        padding: 15px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        animation: fadeIn 0.8s ease;
+    }
+
+    .card-title {
+        color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    #overlay {
+        border-radius: 12px !important;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-size: 24px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="register-container">
+    <h2>@ViewData["Title"]</h2>
+
+    <form asp-action="Register" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="form-group mb-3">
+            <label asp-for="NombreCompleto"></label>
+            <input asp-for="NombreCompleto" class="form-control" />
+            <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Apellidos"></label>
+            <input asp-for="Apellidos" class="form-control" />
+            <span asp-validation-for="Apellidos" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="DUI"></label>
+            <input asp-for="DUI" class="form-control" />
+            <span asp-validation-for="DUI" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Password"></label>
+            <input asp-for="Password" class="form-control" type="password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="ConfirmPassword"></label>
+            <input asp-for="ConfirmPassword" class="form-control" type="password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+
+        <!-- Sección de cámara -->
+        <div class="card-camera text-center">
+            <h5 class="card-title mb-3">Captura de Rostro</h5>
+            <video id="video" width="400" height="300" autoplay muted class="border rounded shadow-sm"></video>
+            <canvas id="canvas" width="400" height="300" style="position:absolute; top:0; left:0;"></canvas>
+
+            <div id="overlay" style="display:none;">
+                ✅ Rostro capturado
+            </div>
+
+            <input type="hidden" asp-for="PlantillaFacialBase64" id="plantillaFacialBase64" />
+
+
+
+
+" id="plantillaFacialBase64" />
+
+            <div id="feedback" class="mt-2 text-info"></div>
+        </div>
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn-submit">
+                Registrar
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script src="~/js/face-api.min.js"></script>
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const feedback = document.getElementById('feedback');
+const overlay = document.getElementById('overlay');
+const plantillaInput = document.getElementById('plantillaFacialBase64');
+let captured = false;
+
+(async () => {
+  try {
+    feedback.innerText = "Cargando modelos faciales...";
+  await Promise.all([
+  faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+  faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+  faceapi.nets.tinyFaceDetector.loadFromUri("/models")
+]);
+
+
+    feedback.innerText = "Modelos cargados. Iniciando cámara...";
+    startVideo();
+  } catch (e) {
+    feedback.classList.replace("text-info", "text-danger");
+    feedback.innerText = "No se pudieron cargar los modelos desde /models. Verifica archivos .json y .bin en wwwroot/models.";
+    console.error(e);
+  }
+})();
+
+function startVideo() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => video.srcObject = stream)
+    .catch(err => {
+      feedback.classList.replace("text-info", "text-danger");
+      feedback.innerText = "Error al acceder a la cámara: " + err.message + ". Usa HTTPS (https://localhost:puerto).";
+    });
+}
+
+video.addEventListener('play', () => {
+  const displaySize = { width: video.width, height: video.height };
+  faceapi.matchDimensions(canvas, displaySize);
+
+  setInterval(async () => {
+  try {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const detection = await faceapi
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+
+    if (detection) {
+      const resizedDetection = faceapi.resizeResults(detection, displaySize);
+
+      const { x, y, width, height } = resizedDetection.detection.box;
+      ctx.strokeStyle = "rgba(255,255,255,0.9)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6,4]);
+      ctx.strokeRect(x, y, width, height);
+
+      // Guarda SOLO el descriptor (vector 128) en el input oculto
+      const descriptor = Array.from(detection.descriptor);
+     plantillaInput.value = JSON.stringify(descriptor);
+
+
+
+      if (!captured) {
+        captured = true;
+        feedback.classList.replace("text-info", "text-success");
+        feedback.innerText = "✅ Rostro detectado, procesando...";
+        setTimeout(() => {
+          const tracks = video.srcObject?.getTracks() || [];
+          tracks.forEach(t => t.stop());
+          overlay.style.display = "flex";
+          feedback.innerText = "✅ Rostro capturado correctamente.";
+        }, 500);
+      }
+    } else if (!captured) {
+      feedback.innerText = "Buscando rostro...";
+    }
+  } catch (e) {
+    feedback.classList.replace("text-info", "text-danger");
+    feedback.innerText = "Error procesando rostro. Verifica que los modelos estén completos en /models.";
+    console.error(e);
+  }
+}, 200);
+
+});
+
+document.querySelector("form").addEventListener("submit", e => {
+  console.log("Submit presionado");
+  if (!plantillaInput.value) {
+    console.log("Rostro no detectado, cancelando envío");
+    e.preventDefault();
+    feedback.classList.replace("text-info", "text-danger");
+    feedback.innerText = "Debes capturar un rostro antes de registrar.";
+  }
+});
+
+</script>
+}
+

@@ -1,0 +1,82 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<UniParkSecure.Models.Usuario> SignInManager
+@inject UserManager<UniParkSecure.Models.Usuario> UserManager
+
+@{
+    ViewData["Title"] = "Dashboard Usuario";
+    var user = await UserManager.GetUserAsync(User);
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- Barra de navegación -->
+    <div class="bg-white shadow mb-6">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex space-x-8">
+    <a href="@Url.Action("DashboardUsuario","Home")" class="text-blue-600 font-semibold">Perfil</a>
+    <a href="@Url.Action("DashboardParqueosUsuario","Home")" class="text-gray-700 hover:text-blue-600">Parqueos</a>
+    <a href="@Url.Action("Historial","Registros")" class="text-gray-700 hover:text-blue-600">Mi Historial</a>
+</div>
+
+                <div>
+                    <span class="text-gray-600 mr-3">@user?.Email</span>
+                    <form asp-action="Logout" asp-controller="Account" method="post" class="inline">
+                        <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto space-y-8">
+
+        <!-- Datos del usuario -->
+        <div class="bg-white rounded shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Mis Datos</h2>
+            <p><strong>Nombre:</strong> @user?.NombreCompleto @user?.Apellidos</p>
+            <p><strong>DUI:</strong> @user?.DUI</p>
+            <p><strong>Correo:</strong> @user?.Email</p>
+        </div>
+
+        <!-- Matrícula -->
+        <div class="bg-white rounded shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Registrar Matrícula</h2>
+            <form asp-action="GuardarMatricula" asp-controller="Home" method="post" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium">Matrícula</label>
+                    <input type="text" name="matricula" value="@user?.Matricula" 
+                           class="mt-1 p-2 border rounded w-full" placeholder="Ej: P123-456" />
+                </div>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar</button>
+            </form>
+        </div>
+
+        <!-- Cambio de contraseña -->
+        <div class="bg-white rounded shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Cambiar Contraseña</h2>
+            <form asp-action="CambiarPassword" asp-controller="Account" method="post" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium">Contraseña actual</label>
+                    <input type="password" name="oldPassword" class="mt-1 p-2 border rounded w-full" required />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Nueva contraseña</label>
+                    <input type="password" name="newPassword" class="mt-1 p-2 border rounded w-full" required />
+                </div>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Actualizar</button>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>

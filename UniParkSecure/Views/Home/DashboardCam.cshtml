@@ -1,0 +1,267 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Cam";
+}
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .dashboard-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 80px 20px 40px 20px;
+    }
+
+    .nav-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 60px;
+        padding: 0;
+        list-style: none;
+        margin-bottom: 40px;
+    }
+
+    .nav-tabs a {
+        text-decoration: none;
+        color: #555;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: color 0.3s;
+    }
+
+    .nav-tabs a:hover {
+        color: #000;
+    }
+
+    .nav-tabs a.active {
+        color: #222;
+    }
+
+    .dashboard-content {
+        text-align: center;
+    }
+
+    .card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+    video, canvas {
+        border-radius: 8px;
+    }
+
+    /* Pantalla de selección de modo */
+    #modoSelector {
+        position: fixed;
+        inset: 0;
+        background: rgba(30,30,30,0.95);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        color: white;
+    }
+
+    #modoSelector h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    #modoSelector button {
+        font-size: 2rem;
+        padding: 20px 60px;
+        border-radius: 18px;
+        font-weight: bold;
+        box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+        transition: transform 0.2s;
+    }
+
+    #modoSelector button:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="nav-tabs">
+        <a href="@Url.Action("DashboardAdmin","Home")">Admin</a>
+        <a href="@Url.Action("DashboardCam","Home")" class="active">Cam</a>
+        <a href="@Url.Action("DashboardParqueos","Home")">Parqueos</a>
+    </div>
+
+    <div class="dashboard-content">
+        <h2>Verificar Rostro</h2>
+
+        <div class="card text-center" style="max-width:480px; margin:auto; position:relative;">
+            <video id="video" width="400" height="300" autoplay muted class="shadow-sm hidden"></video>
+            <canvas id="overlay" width="400" height="300" 
+                style="position:absolute; top:20px; left:50%; transform:translateX(-50%);"></canvas>
+            <div id="feedback" class="mt-2 text-info">Esperando selección...</div>
+        </div>
+    </div>
+
+@section Scripts {
+<script src="@Url.Content("~/js/face-api.min.js")"></script>
+
+<script>
+const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const ctx = overlay.getContext('2d');
+const feedback = document.getElementById('feedback');
+let matcher;
+let modo = null;
+
+// Convertir Base64 → Float32Array
+function base64ToFloat32Array(base64) {
+    const binary = atob(base64);
+    const len = binary.length / 4;
+    const buffer = new ArrayBuffer(len * 4);
+    const view = new DataView(buffer);
+    for (let i = 0; i < len; i++) {
+        const b0 = binary.charCodeAt(i * 4);
+        const b1 = binary.charCodeAt(i * 4 + 1);
+        const b2 = binary.charCodeAt(i * 4 + 2);
+        const b3 = binary.charCodeAt(i * 4 + 3);
+        view.setUint8(i * 4, b0);
+        view.setUint8(i * 4 + 1, b1);
+        view.setUint8(i * 4 + 2, b2);
+        view.setUint8(i * 4 + 3, b3);
+    }
+    return new Float32Array(buffer);
+}
+
+// Cargar modelos y embeddings
+Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+    faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+    faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+]).then(loadEmbeddings);
+
+async function loadEmbeddings() {
+    try {
+        const response = await fetch('/Admin/GetEmbeddings');
+
+        const data = await response.json();
+
+        const labeledDescriptors = data.map(u =>
+    new faceapi.LabeledFaceDescriptors(
+        u.nombre,
+        [ new Float32Array(u.embedding) ]
+    )
+);
+
+
+        matcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+        feedback.innerText = "✅ Modelos listos, selecciona Entrada o Salida.";
+    } catch (err) {
+        feedback.classList.replace("text-info", "text-danger");
+        feedback.innerText = "❌ Error cargando embeddings: " + err.message;
+    }
+}
+
+function startVideo() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+            video.classList.remove("hidden");
+        })
+        .catch(err => {
+            feedback.classList.replace("text-info", "text-danger");
+            feedback.innerText = "❌ Error cámara: " + err.message;
+        });
+}
+
+// Detección facial
+video.addEventListener('play', () => {
+    const displaySize = { width: video.width, height: video.height };
+    faceapi.matchDimensions(overlay, displaySize);
+
+    const interval = setInterval(async () => {
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+        const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (detection) {
+            const resized = faceapi.resizeResults(detection, displaySize);
+            const box = resized.detection.box;
+
+            ctx.strokeStyle = "rgba(0,255,0,0.8)";
+            ctx.lineWidth = 3;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+            const bestMatch = matcher.findBestMatch(detection.descriptor);
+
+            if (bestMatch.label !== "unknown") {
+                feedback.classList.replace("text-info", "text-success");
+                feedback.innerText = `✅ Usuario reconocido: ${bestMatch.label}`;
+
+                const usuarioEmail = bestMatch.label;
+
+                if (modo === "entrada") {
+                    await fetch('/Registros/CreateEntrada', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: usuarioEmail })
+                    });
+                    window.location.href = `/Registros/ElegirSector?email=${encodeURIComponent(usuarioEmail)}`;
+                } 
+                else if (modo === "salida") {
+                    const resp = await fetch("/Registros/CreateSalida", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: usuarioEmail })
+                    });
+                    const data = await resp.json();
+
+                    // Mensaje sobre el video
+                    const overlayMsg = document.createElement("div");
+                    overlayMsg.style.position = "absolute";
+                    overlayMsg.style.top = "0";
+                    overlayMsg.style.left = "0";
+                    overlayMsg.style.width = "100%";
+                    overlayMsg.style.height = "100%";
+                    overlayMsg.style.backgroundColor = "rgba(0,0,0,0.8)";
+                    overlayMsg.style.display = "flex";
+                    overlayMsg.style.justifyContent = "center";
+                    overlayMsg.style.alignItems = "center";
+                    overlayMsg.style.fontSize = "2rem";
+                    overlayMsg.style.color = "white";
+                    overlayMsg.innerText = data.mensaje || "✅ Salida registrada correctamente";
+                    document.querySelector(".card").appendChild(overlayMsg);
+
+                    setTimeout(() => overlayMsg.remove(), 5000);
+                }
+
+                // Detener cámara
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                clearInterval(interval);
+            } else {
+                feedback.classList.replace("text-info", "text-warning");
+                feedback.innerText = "❌ Rostro no coincide con usuarios registrados.";
+            }
+        } else {
+            feedback.classList.replace("text-success", "text-info");
+            feedback.innerText = "Buscando rostro...";
+        }
+    }, 200);
+});
+
+
+
+</script>
+}

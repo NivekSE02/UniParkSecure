@@ -1,0 +1,125 @@
+﻿@model UniParkSecure.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Parqueo UNICAES";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,width=device-width">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #F3F3F3;
+            margin: 0;
+            padding: 0;
+            min-height: 120vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-container {
+            flex: 1;
+            background: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            border-radius: 8px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            margin: 6rem auto 10rem auto;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #000000;
+        }
+
+        .login-container .logo {
+            max-width: 150px;
+            margin-bottom: 1.5rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #EAEAEA;
+            border-radius: 4px;
+            background: #F3F3F3;
+            color: #3D3D3D;
+            font-size: 1rem;
+        }
+
+        .login-input::placeholder {
+            color: #AAA;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #1bb0ce;
+            box-shadow: 0 0 8px rgba(27, 176, 206, 0.3);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(90deg, #24a7ff 0%, #2a46fe 100%);
+            border: none;
+            border-radius: 4px;
+            color: #FFFFFF;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 6px 8px 30px rgba(0,84,252,0.65);
+        }
+
+        .login-button:hover {
+            background: linear-gradient(90deg, #1691aa 0%, #1bb0ce 100%);
+            box-shadow: 0 4px 15px rgba(27, 176, 206, 0.5);
+        }
+
+        .register-link {
+            display: block;
+            margin-top: 1rem;
+            color: #1bb0ce;
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        .register-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Parqueo UNICAES</h1>
+        <img src="https://catolica.edu.sv/wp-content/uploads/2025/03/LOGO_UNICAES_1.png" alt="UNICAES Logo" class="logo">
+        <form method="post" asp-controller="Home" asp-action="Login" class="space-y-4">
+            <input type="email" name="Email" placeholder="Correo catolica.edu.sv" required class="login-input" />
+            <input type="password" name="Password" placeholder="Contraseña" required class="login-input" />
+            <label class="flex items-center space-x-2">
+                <input type="checkbox" name="RememberMe" />
+                <span>Recordarme</span>
+            </label>
+            <button type="submit" class="login-button">Ingresar</button>
+        </form>
+        <a href="/Account/Register" class="register-link">¿No tienes cuenta? Regístrate aquí</a>
+    </div>
+</body>
+</html>
