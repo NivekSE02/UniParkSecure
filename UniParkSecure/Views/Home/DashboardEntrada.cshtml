@@ -1,351 +1,83 @@
 ﻿@{
-    ViewData["Title"] = "Dashboard Cam";
+    ViewData["Title"] = "Control de Entrada";
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="initial-scale=1,user-scalable=no,width=device-width">
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
-</head>
-<body>
 <style>
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-        margin: 0;
-        padding: 0;
-    }
-
-    .dashboard-wrapper {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 80px 20px 40px 20px;
-    }
-
-    .nav-tabs {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
-        list-style: none;
-        margin-bottom: 40px;
-        background: #ffffff;
-        border-bottom: 1px solid #e5e7eb;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        position: relative;
-    }
-
-    .nav-links {
-        display: flex;
-        gap: 60px;
-        flex-wrap: wrap;
-    }
-
-    .nav-tabs a {
-        text-decoration: none;
-        color: #555;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 1.1rem;
-        transition: color 0.3s, background 0.3s;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-    }
-
-    .nav-tabs a:hover {
-        color: #1bb0ce;
-        background: #f3f4f6;
-    }
-
-    .nav-tabs a.active {
-        color: #1bb0ce;
-        background: #e6f3f8;
-    }
-
-    .user-profile {
-        position: absolute;
-        top: 50%;
-        right: 2rem;
-        transform: translateY(-50%);
-        display: flex;
-        align-items: center;
-        z-index: 20;
-    }
-
-    .user-button {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        color: #4b5563;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    .user-button:hover {
-        background: #e6f3f8;
-        color: #1bb0ce;
-    }
-
-    .user-button svg {
-        width: 1.25rem;
-        height: 1.25rem;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        z-index: 20;
-        min-width: 150px;
-    }
-
-    .dropdown-menu.show {
-        display: block;
-    }
-
-    .dropdown-item {
-        display: block;
-        padding: 0.5rem 1rem;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        color: #4b5563;
-        text-decoration: none;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    .dropdown-item:hover {
-        background: #e6f3f8;
-        color: #1bb0ce;
-    }
-
-    .dashboard-content {
-        text-align: center;
-    }
-
-    .card {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        position: relative;
-    }
-
-    video, canvas {
-        border-radius: 8px;
-    }
-
-    #modoSelector {
-        position: fixed;
-        inset: 0;
-        background: rgba(30, 30, 30, 0.95);
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 40px;
-        color: white;
-    }
-
-    #modoSelector h1 {
-        font-size: 2.5rem;
-        font-weight: bold;
-    }
-
-    #modoSelector button {
-        font-size: 2rem;
-        padding: 20px 60px;
-        border-radius: 18px;
-        font-weight: bold;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
-        transition: transform 0.2s;
-    }
-
-    #modoSelector button:hover {
-        transform: scale(1.05);
-    }
+    :root { --accent: #2563eb; --accent-soft: #fce9e9; }
+    body { margin:0; font-family:'Inter','Segoe UI',sans-serif; background:#fff; color:#1f2937; }
+    /* Botón volver */
+    .top-actions{display:flex; justify-content:flex-start; align-items:center; max-width:1400px; margin:0 auto; padding:14px 32px 0; }
+    .back-btn{display:inline-flex; align-items:center; gap:.55rem; background:#f3f4f6; color:#475569; font-family:'Montserrat',sans-serif; font-weight:600; font-size:.8rem; letter-spacing:.5px; padding:.6rem 1.05rem; border-radius:10px; text-decoration:none; border:1px solid #e2e8f0; box-shadow:0 2px 4px rgba(0,0,0,.05); transition:.25s; }
+    .back-btn svg{width:18px;height:18px;stroke-width:2.2; }
+    .back-btn:hover{background:#e6f3f8; color:#1bb0ce; border-color:#cfe8ef; box-shadow:0 4px 10px -2px rgba(27,176,206,.35);} 
+    .main-wrap { max-width:1400px; margin:0 auto; padding:6px 32px 70px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+    .section-title { font-size:2.1rem; font-weight:700; margin:18px 0 8px; letter-spacing:-.5px; }
+    .subtitle { margin:0 0 34px; font-size:.95rem; color:#64748b; max-width:760px; }
+    .scan-layout { display:flex; justify-content:center; align-items:center; width:100%; padding:10px 0 20px; }
+    .device-frame { position:relative; width:100%; max-width:820px; background:#fff; border:1px solid #e2e8f0; border-radius:30px; padding:34px 38px 52px; box-shadow:0 18px 38px -14px rgba(0,0,0,.08), 0 4px 8px -2px rgba(0,0,0,.05); }
+    .video-shell { position:relative; width:100%; aspect-ratio:16/10; border-radius:24px; overflow:hidden; background:linear-gradient(135deg,#f8fafc,#f1f5f9); border:1px solid #e2e8f0; }
+    video,#overlay { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    #overlay { pointer-events:none; }
+    .status-panel { margin-top:30px; display:flex; flex-direction:column; gap:16px; align-items:center; }
+    .status-badge { font-size:.55rem; letter-spacing:1.1px; font-weight:600; background:#eff6ff; color:#1d4ed8; padding:.45rem .75rem; border-radius:999px; text-transform:uppercase; }
+    .feedback-box { font-size:.9rem; font-weight:500; background:#f8fafc; border:1px solid #e2e8f0; padding:18px 20px; border-radius:18px; display:flex; align-items:flex-start; gap:.85rem; line-height:1.35; min-height:62px; width:100%; max-width:540px; }
+    .feedback-icon { width:46px; height:46px; border-radius:14px; background:#eff6ff; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#1d4ed8; font-weight:600; font-size:1.15rem; }
+    .indicator { width:100%; max-width:540px; height:6px; background:#f1f5f9; border-radius:4px; overflow:hidden; position:relative; }
+    .indicator span { position:absolute; inset:0; background:linear-gradient(90deg,#2563eb,#3b82f6); opacity:.45; }
+    .footer-note { margin-top:46px; font-size:.65rem; letter-spacing:.55px; color:#94a3b8; text-transform:uppercase; }
+    .success { background:#ecfdf5; }
+    .warning { background:#fff7ed; }
+    .error { background:#fef2f2; }
+    @@media (max-width:640px){ .back-btn{font-size:.72rem; padding:.55rem .9rem;} .section-title{font-size:1.8rem;} .device-frame{padding:26px 24px 44px;} }
 </style>
 
-<div class="dashboard-wrapper">
-    <div class="nav-tabs">
-        <div class="nav-links">
-            <a href="@Url.Action("DashboardAdmin", "Home")">Historial</a>
-            <a href="@Url.Action("DashboardEntrada", "Home")" class="active">Entrada</a>
-            <a href="@Url.Action("DashboardSalida", "Home")">Salida</a>
-            <a href="@Url.Action("DashboardParqueos", "Home")">Parqueos</a>
-        </div>
-        <div class="user-profile">
-            <button class="user-button">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span>@(ViewBag.UserName ?? "Usuario")</span>
-            </button>
-            <div class="dropdown-menu">
-                <a href="/Home/Login" class="dropdown-item">Cerrar sesión</a>
+<div class="top-actions">
+    <a class="back-btn" href="@Url.Action("DashboardAdmin","Home")" aria-label="Volver a Historial">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        <span>Volver a Historial</span>
+    </a>
+</div>
+
+<main class="main-wrap">
+    <h1 class="section-title">Verificación Facial - Entrada</h1>
+    <p class="subtitle">Colócate frente a la cámara. Detectaremos tu rostro y si coincide con un usuario registrado pasarás a seleccionar sector.</p>
+    <div class="scan-layout">
+        <div class="device-frame">
+            <div class="video-shell">
+                <video id="video" autoplay muted playsinline></video>
+                <canvas id="overlay"></canvas>
+            </div>
+            <div class="status-panel">
+                <div class="status-badge" id="statusPhase">INICIALIZANDO</div>
+                <div id="feedback" class="feedback-box" aria-live="polite" role="status">
+                    <div class="feedback-icon" id="feedbackIcon">⏳</div>
+                    <div id="feedbackText">Cargando modelos de reconocimiento...</div>
+                </div>
+                <div class="indicator"><span></span></div>
             </div>
         </div>
     </div>
-
-    <div class="dashboard-content">
-        <h2>Verificar Rostro - Entrada</h2>
-
-        <div class="card text-center" style="max-width:480px; margin:auto; position:relative;">
-            <video id="video" width="400" height="300" autoplay muted class="shadow-sm hidden"></video>
-            <canvas id="overlay" width="400" height="300" 
-                style="position:absolute; top:20px; left:50%; transform:translateX(-50%);"></canvas>
-            <div id="feedback" class="mt-2 text-info">Iniciando reconocimiento para ENTRADA...</div>
-        </div>
-    </div>
-</div>
+    <div class="footer-note">Universidad - Sistema de Control de Ingreso</div>
+</main>
 
 @section Scripts {
-    <script src="~/js/face-api.min.js"></script>
-    <script>
-        const video = document.getElementById('video');
-        const overlay = document.getElementById('overlay');
-        const ctx = overlay.getContext('2d');
-        const feedback = document.getElementById('feedback');
-        let matcher;
-
-        // Convertir Base64 → Float32Array
-        function base64ToFloat32Array(base64) {
-            const binary = atob(base64);
-            const buffer = new ArrayBuffer(binary.length);
-            const view = new Uint8Array(buffer);
-            for (let i = 0; i < binary.length; i++) {
-                view[i] = binary.charCodeAt(i);
-            }
-            return new Float32Array(buffer);
-        }
-
-        // Cargar modelos y embeddings
-        Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-            faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-            faceapi.nets.faceRecognitionNet.loadFromUri('/models')
-        ]).then(loadEmbeddings);
-
-        async function loadEmbeddings() {
-            try {
-                const response = await fetch('/Admin/GetEmbeddings');
-                const data = await response.json();
-
-                const labeledDescriptors = data.map(u =>
-                    new faceapi.LabeledFaceDescriptors(u.nombre, [new Float32Array(u.embedding)])
-                );
-
-                matcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
-                feedback.innerText = "✅ Modelos listos.";
-                startVideo();
-            } catch (err) {
-                feedback.classList.replace("text-info", "text-danger");
-                feedback.innerText = "❌ Error cargando embeddings: " + err.message;
-            }
-        }
-
-        function startVideo() {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    video.srcObject = stream;
-                    video.classList.remove("hidden");
-                })
-                .catch(err => {
-                    feedback.classList.replace("text-info", "text-danger");
-                    feedback.innerText = "❌ Error cámara: " + err.message;
-                });
-        }
-
-        // Detección facial
-        video.addEventListener('play', () => {
-            const displaySize = { width: video.width, height: video.height };
-            faceapi.matchDimensions(overlay, displaySize);
-
-            const interval = setInterval(async () => {
-                ctx.clearRect(0, 0, overlay.width, overlay.height);
-
-                const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-
-                if (detection) {
-                    const resized = faceapi.resizeResults(detection, displaySize);
-                    const box = resized.detection.box;
-
-                    ctx.strokeStyle = "rgba(0,255,0,0.8)";
-                    ctx.lineWidth = 3;
-                    ctx.setLineDash([6, 4]);
-                    ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-                    const bestMatch = matcher.findBestMatch(detection.descriptor);
-
-                    if (bestMatch.label !== "unknown") {
-                        feedback.classList.replace("text-info", "text-success");
-                        feedback.innerText = `✅ Usuario reconocido: ${bestMatch.label}`;
-
-                        const usuarioEmail = bestMatch.label;
-
-                        // Registrar entrada
-                        await fetch('/Registros/CreateEntrada', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: usuarioEmail })
-                        });
-
-                        // Redirigir a elección de sector
-                        window.location.href = `/Registros/ElegirSector?email=${encodeURIComponent(usuarioEmail)}`;
-
-                        // Detener cámara
-                        const tracks = video.srcObject.getTracks();
-                        tracks.forEach(track => track.stop());
-                        clearInterval(interval);
-                    } else {
-                        feedback.classList.replace("text-info", "text-warning");
-                        feedback.innerText = "❌ Rostro no coincide con usuarios registrados.";
-                    }
-                } else {
-                    feedback.classList.replace("text-success", "text-info");
-                    feedback.innerText = "Buscando rostro...";
-                }
-            }, 200);
-        });
-
-        // User profile dropdown functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            const userButton = document.querySelector('.user-button');
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-            if (userButton && dropdownMenu) {
-                userButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    dropdownMenu.classList.toggle('show');
-                });
-                document.addEventListener('click', (e) => {
-                    if (!userButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                        dropdownMenu.classList.remove('show');
-                    }
-                });
-            }
-        });
-    </script>
+<script src="~/js/face-api.min.js"></script>
+<script>
+const video=document.getElementById('video');
+const overlay=document.getElementById('overlay');
+const ctx=overlay.getContext('2d');
+const feedbackBox=document.getElementById('feedback');
+const feedbackIcon=document.getElementById('feedbackIcon');
+const feedbackText=document.getElementById('feedbackText');
+const statusPhase=document.getElementById('statusPhase');
+let matcher;function setState(t,m,p,i){feedbackBox.classList.remove('success','warning','error');if(t)feedbackBox.classList.add(t);feedbackIcon.textContent=i||'ℹ️';feedbackText.textContent=m;if(p)statusPhase.textContent=p;}
+Promise.all([
+ faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+ faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+ faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+]).then(loadEmbeddings);
+async function loadEmbeddings(){try{setState(null,'Cargando datos biométricos...','CARGANDO','⏳');const r=await fetch('/Admin/GetEmbeddings');const data=await r.json();const labeled=data.map(u=>new faceapi.LabeledFaceDescriptors(u.nombre,[new Float32Array(u.embedding)]));matcher=new faceapi.FaceMatcher(labeled,0.6);setState('success','Modelos listos. Iniciando cámara...','LISTO','✅');startVideo();}catch(err){setState('error','Error cargando embeddings: '+err.message,'ERROR','⚠️');}}
+function startVideo(){navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}}).then(stream=>{video.srcObject=stream;setState('warning','Buscando rostro...','ESCANEO','👁');}).catch(err=>setState('error','Error cámara: '+err.message,'ERROR','🚫'));}
+video.addEventListener('play',()=>{const resize=()=>{overlay.width=video.clientWidth;overlay.height=video.clientHeight;};resize();window.addEventListener('resize',resize);const interval=setInterval(async()=>{ctx.clearRect(0,0,overlay.width,overlay.height);const det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();if(det){const displaySize={width:overlay.width,height:overlay.height};const resized=faceapi.resizeResults(det,displaySize);const box=resized.detection.box;ctx.strokeStyle='rgba(37,99,235,0.9)';ctx.lineWidth=3;ctx.setLineDash([10,6]);ctx.strokeRect(box.x,box.y,box.width,box.height);const match=matcher.findBestMatch(det.descriptor);if(match.label!=='unknown'){setState('success',`Usuario reconocido: ${match.label}. Redirigiendo...`,'VALIDADO','✅');const email=match.label;setTimeout(()=>{window.location.href=`/Registros/ElegirSector?email=${encodeURIComponent(email)}`;},650);video.srcObject.getTracks().forEach(t=>t.stop());clearInterval(interval);}else{setState('warning','Rostro detectado pero no coincide. Intenta de nuevo.','NO COINCIDE','⚠️');}}else{setState('warning','Buscando rostro...','ESCANEO','👁');}},230);});
+</script>
 }
-</body>
-</html>

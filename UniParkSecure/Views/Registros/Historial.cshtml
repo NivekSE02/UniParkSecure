@@ -1,77 +1,128 @@
 ﻿@model IEnumerable<UniParkSecure.Models.Registro>
-
 @{
     ViewData["Title"] = "Mi Historial";
+    var total = Model?.Count() ?? 0;
+    var abiertos = Model?.Count(r => r.FechaSalida == null) ?? 0;
+    var hoy = Model?.Count(r => r.FechaEntrada.Date == DateTime.Today) ?? 0;
+    var qVal = Context.Request.Query["q"].ToString();
+    var fVal = Context.Request.Query["f"].ToString();
 }
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>@ViewData["Title"]</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+<style>
+    body { background:#f1f5f9; font-family:'Inter','Segoe UI',sans-serif; color:#334155; }
+    .nav-shell { background:#ffffff; box-shadow:0 2px 4px rgba(0,0,0,.05); margin-bottom:28px; }
+    .nav-inner { max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding:14px 28px; }
+    .nav-links a { text-decoration:none; font-weight:600; font-size:.9rem; padding:.55rem .9rem; border-radius:8px; color:#475569; transition:.25s; }
+    .nav-links a:hover { background:#f1f5f9; color:#1e293b; }
+    .nav-links a.active { background:#2563eb; color:#ffffff; box-shadow:0 2px 6px rgba(37,99,235,.35); }
+    .badge { display:inline-block; padding:.3rem .55rem; border-radius:999px; font-size:.65rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+    .badge-live { background:#fee2e2; color:#b91c1c; }
+    .badge-closed { background:#e2fbe8; color:#047857; }
+    .badge-today { background:#dbeafe; color:#1d4ed8; }
+    .card { background:#ffffff; border:1px solid #e2e8f0; border-radius:18px; padding:22px 24px; box-shadow:0 4px 14px -4px rgba(0,0,0,.08),0 2px 4px -2px rgba(0,0,0,.05); }
+    .metric { display:flex; flex-direction:column; gap:2px; }
+    .metric h3 { font-size:.65rem; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:#64748b; }
+    .metric .val { font-size:1.55rem; font-weight:700; line-height:1; color:#0f172a; }
+    .table-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:20px; background:#fff; }
+    table { width:100%; border-collapse:separate; border-spacing:0; font-size:.85rem; }
+    thead th { position:sticky; top:0; background:#f1f5f9; text-align:left; font-weight:600; padding:14px 16px; font-size:.7rem; letter-spacing:.6px; text-transform:uppercase; color:#475569; }
+    tbody td { padding:13px 16px; border-top:1px solid #eef2f7; white-space:nowrap; }
+    tbody tr:first-child td { border-top:none; }
+    tbody tr:hover { background:#f8fafc; }
+    .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+    .dot-live { background:#dc2626; }
+    .dot-closed { background:#16a34a; }
+    .filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin:0 0 18px; }
+    .filter-bar input { background:#f1f5f9; border:1px solid #dbe3ec; padding:8px 12px; border-radius:10px; font-size:.8rem; outline:none; min-width:180px; }
+    .filter-bar input:focus { border-color:#2563eb; background:#eef6ff; }
+    .filter-bar button { background:#2563eb; color:#fff; border:none; padding:8px 18px; font-size:.75rem; font-weight:600; border-radius:10px; letter-spacing:.5px; cursor:pointer; box-shadow:0 2px 6px rgba(37,99,235,.35); }
+    .filter-bar button:hover { filter:brightness(1.07); }
+    .empty { text-align:center; padding:42px 16px; color:#94a3b8; font-weight:500; }
+</style>
 </head>
-<body class="bg-gray-100 font-sans">
-
-    <!-- Barra de navegación -->
-    <div class="bg-white shadow mb-6">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex space-x-8">
-    <a href="@Url.Action("DashboardUsuario","Home")" class="text-gray-700 hover:text-blue-600">Perfil</a>
-    <a href="@Url.Action("DashboardParqueosUsuario","Home")" class="text-gray-700 hover:text-blue-600">Parqueos</a>
-    <a href="@Url.Action("Historial","Registros")" class="text-blue-600 font-semibold">Mi Historial</a>
-</div>
-
-                <div>
-                    <form asp-action="Logout" asp-controller="Account" method="post" class="inline">
-                        <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
-                            Cerrar sesión
-                        </button>
-                    </form>
-                </div>
+<body>
+    <div class="nav-shell">
+        <div class="nav-inner">
+            <div class="nav-links flex gap-4">
+                <a href="@Url.Action("DashboardUsuario","Home")" class="@(ViewContext.RouteData.Values["action"]?.ToString()=="DashboardUsuario"?"active":null)">Perfil</a>
+                <a href="@Url.Action("DashboardParqueosUsuario","Home")" class="@(ViewContext.RouteData.Values["action"]?.ToString()=="DashboardParqueosUsuario"?"active":null)">Parqueos</a>
+                <a href="@Url.Action("Historial","Registros")" class="active">Mi Historial</a>
             </div>
+            <form asp-action="Logout" asp-controller="Account" method="post" class="m-0">
+                <button type="submit" class="px-3 py-1.5 bg-red-500 text-white rounded-md text-xs font-semibold hover:bg-red-600">Cerrar sesión</button>
+            </form>
         </div>
     </div>
-
-    <!-- Contenido -->
-    <div class="max-w-5xl mx-auto bg-white shadow rounded p-6">
-        <h2 class="text-2xl font-bold mb-4 text-gray-700">📜 Mi Historial de Entradas y Salidas</h2>
-
-        <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="px-4 py-2 text-left text-gray-700">Fecha Entrada</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Fecha Salida</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Placa</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Sector</th>
-                    </tr>
-                </thead>
-                <tbody>
+    <div class="max-w-6xl mx-auto px-6 pb-14 space-y-10">
+        <header class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight header-gradient" style="background:linear-gradient(90deg,#1e293b,#475569);-webkit-background-clip:text;color:transparent;">Historial de Accesos</h1>
+                <p class="subtle mt-1 text-sm">Registros de entrada y salida de tus vehículos.</p>
+            </div>
+            <div class="grid grid-cols-3 gap-4 min-w-[280px]">
+                <div class="card metric"><h3>Total</h3><div class="val">@total</div></div>
+                <div class="card metric"><h3>Activos</h3><div class="val">@abiertos</div></div>
+                <div class="card metric"><h3>Hoy</h3><div class="val">@hoy</div></div>
+            </div>
+        </header>
+        <section class="card">
+            <form method="get" class="filter-bar">
+                <input name="q" value="@qVal" placeholder="Buscar placa / sector" />
+                <input type="date" name="f" value="@fVal" />
+                <button type="submit">Filtrar</button>
+            </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Estado</th>
+                            <th>Fecha Entrada</th>
+                            <th>Fecha Salida</th>
+                            <th>Placa</th>
+                            <th>Sector</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     @if (Model != null && Model.Any())
                     {
-                        foreach (var item in Model)
+                        var filtered = Model;
+                        var q = qVal?.Trim();
+                        var f = fVal;
+                        if(!string.IsNullOrEmpty(q)) { filtered = filtered.Where(r => (r.Placa??"").Contains(q,StringComparison.OrdinalIgnoreCase) || ((r.SectorId.HasValue? r.SectorId.Value.ToString():"")).Contains(q,StringComparison.OrdinalIgnoreCase)); }
+                        if(DateTime.TryParse(f, out var fd)) { filtered = filtered.Where(r => r.FechaEntrada.Date == fd.Date); }
+                        foreach (var item in filtered.OrderByDescending(r=> r.FechaEntrada))
                         {
-                            <tr class="border-t hover:bg-gray-50">
-                                <td class="px-4 py-2">@item.FechaEntrada.ToString("g")</td>
-                                <td class="px-4 py-2">@item.FechaSalida?.ToString("g") ?? "-"</td>
-                                <td class="px-4 py-2">@item.Placa</td>
-                                <td class="px-4 py-2">@item.SectorId</td>
+                            bool activo = item.FechaSalida == null;
+                            <tr>
+                                <td class="font-medium">
+                                    <span class="status-dot @(activo?"dot-live":"dot-closed")"></span>
+                                    <span class="badge @(activo?"badge-live":"badge-closed")">@(activo?"Activo":"Cerrado")</span>
+                                </td>
+                                <td>@item.FechaEntrada.ToString("g")</td>
+                                <td>@(item.FechaSalida?.ToString("g") ?? "-")</td>
+                                <td>@item.Placa</td>
+                                <td><span class="badge badge-today">@(item.SectorId?.ToString() ?? "-")</span></td>
                             </tr>
+                        }
+                        if(!filtered.Any())
+                        {
+                            <tr><td colspan="5" class="empty">Sin coincidencias.</td></tr>
                         }
                     }
                     else
                     {
-                        <tr>
-                            <td colspan="4" class="text-center text-gray-500 py-4">No tienes registros todavía.</td>
-                        </tr>
+                        <tr><td colspan="5" class="empty">No tienes registros todavía.</td></tr>
                     }
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
-
 </body>
 </html>

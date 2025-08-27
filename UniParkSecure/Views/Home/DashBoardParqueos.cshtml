@@ -1,258 +1,94 @@
-﻿@{
+﻿@model IEnumerable<UniParkSecure.Models.Sector>
+@{
     ViewData["Title"] = "Dashboard Parqueos";
 }
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="initial-scale=1,user-scalable=no,width=device-width">
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>@ViewData["Title"]</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+<style>
+    body { background:#ffffff; font-family:'Inter','Segoe UI',sans-serif; color:#222; min-height:100vh; }
+    h1,h2 { color:#111; }
+    .subtle { color:#555; }
+    .card-shadow { box-shadow:0 4px 10px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.05); }
+    .sector-card { transition:transform .25s, box-shadow .25s; border:1px solid #e5e7eb; background:#fff; }
+    .sector-card:hover { transform:translateY(-4px); box-shadow:0 10px 22px -4px rgba(0,0,0,.12); }
+    .progress-wrap { position:relative; height:10px; border-radius:6px; overflow:hidden; background:#f1f5f9; }
+    .progress-bar { position:absolute; inset:0; width:0; transition:width .6s cubic-bezier(.4,.11,.2,1), background-color .4s; }
+    .badge { font-size:.60rem; letter-spacing:.5px; font-weight:600; padding:.30rem .55rem; border-radius:999px; text-transform:uppercase; line-height:1; }
+    .status-free { background:#e6f9f1; color:#065f46; border:1px solid #16a34a33; }
+    .status-mid { background:#fff3e0; color:#92400e; border:1px solid #f59e0b33; }
+    .status-full { background:#fde2e1; color:#7f1d1d; border:1px solid #dc262633; }
+    .header-gradient { background:linear-gradient(90deg,#111,#444); -webkit-background-clip:text; color:transparent; }
+    .nav-bar { position:sticky; top:0; z-index:40; background:#ffffff; border-bottom:1px solid #e5e7eb; box-shadow:0 2px 4px rgba(0,0,0,.04); }
+    .nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:2.5rem; padding:.85rem 1.75rem; }
+    .nav-link { font-weight:600; font-size:.9rem; color:#555; text-decoration:none; padding:.55rem .95rem; border-radius:6px; transition:.2s; }
+    .nav-link:hover { background:#f3f4f6; color:#111; }
+    .nav-link.active { background:#111; color:#fff; }
+    .divider { height:1px; background:#e5e7eb; margin:1.25rem 0; }
+</style>
 </head>
 <body>
-<style>
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-        margin: 0;
-        padding: 0;
-    }
-
-    .dashboard-wrapper {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 80px 20px 40px 20px;
-    }
-
-    .nav-tabs {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
-        list-style: none;
-        margin-bottom: 40px;
-        background: #ffffff;
-        border-bottom: 1px solid #e5e7eb;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        position: relative;
-    }
-
-    .nav-links {
-        display: flex;
-        gap: 60px;
-        flex-wrap: wrap;
-    }
-
-    .nav-tabs a {
-        text-decoration: none;
-        color: #555;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 1.1rem;
-        transition: color 0.3s, background 0.3s;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-    }
-
-    .nav-tabs a:hover {
-        color: #1bb0ce;
-        background: #f3f4f6;
-    }
-
-    .nav-tabs a.active {
-        color: #1bb0ce;
-        background: #e6f3f8;
-    }
-
-    .user-profile {
-        position: absolute;
-        top: 50%;
-        right: 2rem;
-        transform: translateY(-50%);
-        display: flex;
-        align-items: center;
-        z-index: 20;
-    }
-
-    .user-button {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        color: #4b5563;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    .user-button:hover {
-        background: #e6f3f8;
-        color: #1bb0ce;
-    }
-
-    .user-button svg {
-        width: 1.25rem;
-        height: 1.25rem;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        z-index: 20;
-        min-width: 150px;
-    }
-
-    .dropdown-menu.show {
-        display: block;
-    }
-
-    .dropdown-item {
-        display: block;
-        padding: 0.5rem 1rem;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        color: #4b5563;
-        text-decoration: none;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    .dropdown-item:hover {
-        background: #e6f3f8;
-        color: #1bb0ce;
-    }
-
-    .parking-map-wrapper {
-        position: relative;
-        display: inline-block;
-        max-width: 800px;
-        margin: auto;
-    }
-
-    .parking-map-wrapper img {
-        width: 100%;
-        display: block;
-        border-radius: 12px;
-    }
-
-    .sector {
-        position: absolute;
-        width: 25px;
-        height: 25px;
-        border-radius: 50%;
-        background: rgba(0, 123, 255, 0.5);
-        cursor: pointer;
-        transition: background 0.3s, transform 0.3s;
-        z-index: 2;
-    }
-
-    .sector:hover {
-        background: rgba(0, 123, 255, 0.9);
-        transform: scale(1.5);
-    }
-
-    #tooltip {
-        position: absolute;
-        display: none;
-        padding: 6px 12px;
-        background: #fff;
-        border: 1px solid #333;
-        border-radius: 6px;
-        pointer-events: none;
-        z-index: 10;
-    }
-</style>
-
-<div class="dashboard-wrapper">
-    <div class="nav-tabs">
-        <div class="nav-links">
-            <a href="@Url.Action("DashboardAdmin", "Historial")">Historial</a>
-            <a href="@Url.Action("DashboardEntrada", "Home")">Entrada</a>
-            <a href="@Url.Action("DashboardSalida", "Home")">Salida</a>
-            <a href="@Url.Action("DashboardParqueos", "Home")" class="active">Parqueos</a>
+    <nav class="nav-bar">
+        <div class="nav-inner">
+            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="DashboardAdmin"?"active":"")" href="@Url.Action("DashboardAdmin","Home")">Historial</a>
+            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="DashboardEntrada"?"active":"")" href="@Url.Action("DashboardEntrada","Home")">Entrada</a>
+            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="DashboardSalida"?"active":"")" href="@Url.Action("DashboardSalida","Home")">Salida</a>
+            <a class="nav-link active" href="@Url.Action("DashboardParqueos","Home")">Parqueos</a>
         </div>
-        <div class="user-profile">
-            <button class="user-button">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span>@(ViewBag.UserName ?? "Usuario")</span>
-            </button>
-            <div class="dropdown-menu">
-                <a href="/Home/Login" class="dropdown-item">Cerrar sesión</a>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 pt-10 pb-10">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight header-gradient">Estado de Parqueos</h1>
+                <p class="subtle mt-1 text-sm">Capacidad y disponibilidad en tiempo real por sector.</p>
             </div>
         </div>
+
+        <div id="gridSectores" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+        <div id="emptyMessage" class="hidden mt-20 text-center text-gray-500">No hay sectores registrados.</div>
     </div>
-
-    <div class="dashboard-content">
-        <h2>Mapa de Parqueos</h2>
-
-        <div class="parking-map-wrapper">
-            <img src="/images/unicaes-map.png" alt="Mapa UNICAES">
-
-            <div class="sector" style="top:2.4%; left:61.7%;" data-title="Biblioteca 1: 25 parqueos"></div>
-            <div class="sector" style="top:1.5%; left:61.4%;" data-title="Biblioteca 1: 25 parqueos"></div>
-            <div class="sector" style="top:4.3%; left:63.6%;" data-title="Colegio: 30 parqueos"></div>
-            <div class="sector" style="top:13.0%; left:62.6%;" data-title="Biblioteca 2: 20 parqueos"></div>
-            <div class="sector" style="top:16.9%; left:63.0%;" data-title="Edificio A: 40 parqueos"></div>
-            <div class="sector" style="top:19.6%; left:62.8%;" data-title="Edificio B: 35 parqueos"></div>
-            <div class="sector" style="top:25.5%; left:62.7%;" data-title="Edificio C: 30 parqueos"></div>
-            <div class="sector" style="top:44.5%; left:62.9%;" data-title="Edificio E: 25 parqueos"></div>
-            <div class="sector" style="top:65.2%; left:67.8%;" data-title="Edificio G: 15 parqueos"></div>
-
-            <div id="tooltip"></div>
-        </div>
-    </div>
-</div>
 
 <script>
-    const tooltip = document.getElementById('tooltip');
+    const grid = document.getElementById('gridSectores');
+    const emptyMsg = document.getElementById('emptyMessage');
 
-    document.querySelectorAll('.sector').forEach(sec => {
-        sec.addEventListener('mouseenter', e => {
-            tooltip.style.display = 'block';
-            tooltip.innerText = sec.dataset.title;
-        });
-        sec.addEventListener('mousemove', e => {
-            tooltip.style.top = (e.pageY - 30) + 'px';
-            tooltip.style.left = e.pageX + 'px';
-        });
-        sec.addEventListener('mouseleave', () => {
-            tooltip.style.display = 'none';
-        });
-        sec.addEventListener('click', () => {
-            alert(sec.dataset.title);
-        });
-    });
+    const friendly = { 'A':'Edificio A','B':'Edificio B','C':'Edificio C','E':'Edificio E','G':'Edificio G','V':'Biblioteca 1','V2':'Biblioteca 2','COL':'Colegio' };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const userButton = document.querySelector('.user-button');
-        const dropdownMenu = document.querySelector('.dropdown-menu');
-        if (userButton && dropdownMenu) {
-            userButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                dropdownMenu.classList.toggle('show');
-            });
-            document.addEventListener('click', (e) => {
-                if (!userButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                    dropdownMenu.classList.remove('show');
-                }
-            });
-        }
-    });
+    function statusClass(free,total){ if(total===0) return 'status-free'; if(free===0) return 'status-full'; const ratio=free/total; return ratio<0.5 ? 'status-mid':'status-free'; }
+    function barColor(free,total){ if(total===0) return 'linear-gradient(90deg,#0891b2,#0ea5e9)'; if(free===0) return 'linear-gradient(90deg,#dc2626,#b91c1c)'; const ratio=free/total; if(ratio<0.5) return 'linear-gradient(90deg,#f59e0b,#d97706)'; return 'linear-gradient(90deg,#16a34a,#059669)'; }
+    function occupancyPercent(free,total){ if(total===0) return 0; return ((total-free)/total)*100; }
+    function formatStats(free,total){ const occupied= total-free; return `${free} libres de ${total} (ocupados: ${occupied})`; }
+
+    function render(data){
+        grid.innerHTML='';
+        if(!data || data.length===0){ emptyMsg.classList.remove('hidden'); return; }
+        emptyMsg.classList.add('hidden');
+        data.forEach(s=>{
+            const nameKey=(s.nombre||'').toUpperCase();
+            const displayName=friendly[nameKey] || s.nombre || 'Sector';
+            const free = s.disponibles ?? 0; const total = s.totalEspacios ?? 0;
+            const pctOcc=occupancyPercent(free,total); const barPct=pctOcc.toFixed(1)+'%';
+            const badgeCls=statusClass(free,total);
+            const card=document.createElement('div');
+            card.className='sector-card rounded-xl p-5 transition duration-300 relative overflow-hidden';
+            card.innerHTML=`<div class=\"flex items-start justify-between mb-4\">\n <div>\n  <h2 class=\"text-lg font-semibold\">${displayName}</h2>\n </div>\n <span class=\"badge ${badgeCls}\" data-free=\"${free}\" data-total=\"${total}\"></span>\n</div>\n<div class=\"mb-3\">\n <div class=\"flex justify-between text-xs mb-1 subtle\"><span>Ocupación</span><span>${barPct}</span></div>\n <div class=\"progress-wrap\"><div class=\"progress-bar\" style=\"width:${pctOcc}%; background:${barColor(free,total)};\"></div></div>\n</div>\n<div class=\"text-sm font-medium text-gray-700\">${formatStats(free,total)}</div>\n<div class=\"mt-3 flex gap-3 text-[11px] text-gray-500\">\n <div class=\"flex items-center gap-1\"><span class=\"inline-block w-2.5 h-2.5 rounded-full\" style=\"background:${barColor(free,total)}\"></span>Actualizado</div>\n <div>${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>\n</div>`;
+            grid.appendChild(card);
+        });
+        updateBadges();
+    }
+
+    function updateBadges(){
+        grid.querySelectorAll('.badge').forEach(b=>{ const free=parseInt(b.getAttribute('data-free')); const total=parseInt(b.getAttribute('data-total')); if(total===0){ b.textContent='N/D'; return;} if(free===0){ b.textContent='Lleno'; b.classList.add('status-full'); return;} const ratio=free/total; b.textContent= ratio<0.5 ? 'Media':'Libre'; });
+    }
+
+    async function load(){ try{ const res=await fetch('/Home/SectoresStatus'); if(!res.ok) return; const data=await res.json(); render(data);} catch(e){ console.error('Error obteniendo sectores', e); } }
+
+    load(); setInterval(load,7000);
 </script>
 </body>
 </html>

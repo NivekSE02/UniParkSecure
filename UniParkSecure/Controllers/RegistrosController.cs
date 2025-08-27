@@ -1,50 +1,34 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using UniParkSecure.Data;
 using UniParkSecure.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace UniParkSecure.Controllers
 {
     public class RegistrosController : Controller
     {
-        private readonly UserManager<Usuario> _userManager;
         private readonly ApplicationDbContext _context;
 
-        public RegistrosController(UserManager<Usuario> userManager, ApplicationDbContext context)
+        public RegistrosController(ApplicationDbContext context)
         {
-            _userManager = userManager;
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateSalida([FromBody] EntradaRequest request)
-        {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null)
-                return NotFound(new { mensaje = "Usuario no encontrado" });
-
-            var registro = await _context.Registros
-                .Where(r => r.UserId == user.Id && r.FechaSalida == null)
-                .OrderByDescending(r => r.FechaEntrada)
-                .FirstOrDefaultAsync();
-
-            if (registro == null)
-                return NotFound(new { mensaje = "No hay registro activo para este usuario" });
-
-            registro.FechaSalida = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            return Ok(new { mensaje = $"✅ Salida registrada para {user.Email}" });
-        }
-
-
-        
+        [HttpGet]
         public async Task<IActionResult> Historial()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
+            // Si no está autenticado redirigir a login
+            if (!User.Identity?.IsAuthenticated ?? true)
+                return RedirectToAction("Login", "Home");
+
+            var email = User.Identity!.Name;
+            if (string.IsNullOrWhiteSpace(email))
+                return RedirectToAction("Login", "Home");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                return RedirectToAction("Login", "Home");
 
             var registros = await _context.Registros
                 .Where(r => r.UserId == user.Id)
@@ -54,90 +38,101 @@ namespace UniParkSecure.Controllers
             return View(registros);
         }
 
-
-
-
-
-        [HttpPost]
-        public async Task<IActionResult> CreateEntrada([FromBody] EntradaRequest request)
-        {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null)
-                return NotFound(new { mensaje = "Usuario no encontrado" });
-
-            // Evitar múltiples entradas activas
-            var registroExistente = await _context.Registros
-                .FirstOrDefaultAsync(r => r.UserId == user.Id && r.FechaSalida == null);
-
-            if (registroExistente != null)
-            {
-                // Redirigir si ya existe un registro activo
-                return Ok(new
-                {
-                    registroId = registroExistente.Id,
-                    mensaje = "Usuario ya tiene una entrada activa",
-                    redirect = Url.Action("ElegirSector", "Registros", new { email = user.Email })
-                });
-            }
-
-            var registro = new Registro
-            {
-                UserId = user.Id,
-                FechaEntrada = DateTime.Now,
-                DUI = user.DUI,
-                Placa = "N/A",
-                FotoPath = "N/A"
-            };
-
-            _context.Registros.Add(registro);
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                registroId = registro.Id,
-                mensaje = "Nueva entrada creada",
-                redirect = Url.Action("ElegirSector", "Registros", new { email = user.Email })
-            });
-        }
-
+        // 📌 Vista para elegir sector (se llama desde DashboardCam)
         [HttpGet]
         public IActionResult ElegirSector(string email)
         {
+            if (string.IsNullOrEmpty(email))
+                return RedirectToAction("DashboardCam", "Home");
+
             ViewBag.Email = email;
             return View();
         }
 
+        // 📌 Crear entrada directa (ya incluye sector)
         [HttpPost]
-        public async Task<IActionResult> ConfirmarSector([FromBody] SectorRequest request)
+        public IActionResult CreateEntrada([FromBody] EntradaRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (request == null || string.IsNullOrEmpty(request.Email) || request.SectorId == 0)
+                return Json(new { mensaje = "Datos inválidos" });
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
             if (user == null)
-                return NotFound(new { mensaje = "Usuario no encontrado" });
+                return Json(new { mensaje = "Usuario no encontrado" });
 
-            var registro = await _context.Registros
-                .Where(r => r.UserId == user.Id && r.FechaSalida == null)
-                .OrderByDescending(r => r.FechaEntrada)
-                .FirstOrDefaultAsync();
+            var registroExistente = _context.Registros
+                .FirstOrDefault(r => r.UserId == user.Id && r.FechaSalida == null);
+            if (registroExistente != null)
+                return Json(new { mensaje = "Ya existe una entrada activa" });
 
+            var sector = _context.Sectores.FirstOrDefault(s => s.Id == request.SectorId);
+            if (sector == null)
+                return Json(new { mensaje = "Sector no válido" });
+            if (sector.Disponibles <= 0)
+                return Json(new { mensaje = "No hay espacios disponibles en el sector" });
+
+            // Crear registro incluyendo DUI (antes no se asignaba y quedaba null)
+            var registro = new Registro
+            {
+                UserId = user.Id,
+                DUI = user.DUI, // Copiamos el DUI del usuario
+                FechaEntrada = DateTime.Now,
+                FechaSalida = null,
+                SectorId = request.SectorId
+            };
+
+            // Actualizar disponibilidad localmente (antes era trigger)
+            sector.Disponibles -= 1;
+
+            _context.Registros.Add(registro);
+            _context.SaveChanges();
+
+            return Json(new { mensaje = "Entrada registrada con éxito" });
+        }
+
+        // 📌 Registrar salida
+        [HttpPost]
+        public IActionResult CreateSalida([FromBody] SalidaRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.Email))
+                return Json(new { mensaje = "Datos inválidos" });
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+            if (user == null)
+                return Json(new { mensaje = "Usuario no encontrado" });
+
+            var registro = _context.Registros
+                .FirstOrDefault(r => r.UserId == user.Id && r.FechaSalida == null);
             if (registro == null)
-                return NotFound(new { mensaje = "Registro no encontrado" });
+                return Json(new { mensaje = "No hay registro de entrada activo" });
 
-            registro.SectorId = request.SectorId;
+            registro.FechaSalida = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+            // Incrementar cupo disponible (antes trigger de salida)
+            if (registro.SectorId.HasValue)
+            {
+                var sector = _context.Sectores.FirstOrDefault(s => s.Id == registro.SectorId.Value);
+                if (sector != null)
+                {
+                    sector.Disponibles += 1;
+                }
+            }
 
-            return Ok(new { mensaje = $"Bienvenido! Usted se dirige a: {request.SectorId}" });
+            _context.SaveChanges();
+
+            return Json(new { mensaje = "Salida registrada con éxito" });
         }
     }
 
+    // DTOs para requests
     public class EntradaRequest
     {
         public string Email { get; set; }
+        public int SectorId { get; set; }
     }
 
-    public class SectorRequest
+    public class SalidaRequest
     {
         public string Email { get; set; }
-        public int SectorId { get; set; }
     }
 }

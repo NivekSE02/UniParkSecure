@@ -77,35 +77,23 @@ namespace UniParkSecure.Controllers
         public IActionResult GetEmbeddings()
         {
             var usuarios = _dbContext.Usuarios
-                .Where(u => u.PlantillaFacial != null) // Esto sí es translatable a SQL
-                .AsEnumerable() // Desde aquí todo será LINQ en memoria
-                .Where(u => u.PlantillaFacial.Length > 0) // Ahora sí puedes usar Length
-                .Select(u =>
-                {
+                .Where(u => u.PlantillaFacial != null)
+                .AsEnumerable()
+                .Where(u => u.PlantillaFacial.Length > 0)
+                .Select(u => {
                     string json = Encoding.UTF8.GetString(u.PlantillaFacial ?? Array.Empty<byte>());
-
                     if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith("["))
                         return null;
-
                     float[] embedding;
-                    try
-                    {
-                        embedding = JsonSerializer.Deserialize<float[]>(json);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-
-                    return new
-                    {
-                        nombre = u.Email,
+                    try { embedding = System.Text.Json.JsonSerializer.Deserialize<float[]>(json); }
+                    catch { return null; }
+                    return new {
+                        nombre = u.Email, // <-- aseguramos que sea el email
                         embedding = embedding
                     };
                 })
                 .Where(x => x != null)
                 .ToList();
-
             return Json(usuarios);
         }
 

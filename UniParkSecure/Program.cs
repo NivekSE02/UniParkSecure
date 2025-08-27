@@ -61,6 +61,9 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Login}/{id?}");
 
+// RUTA PARA API/CONTROLADORES (asegura rutas tipo /Registros/ConfirmarSector)
+app.MapControllers();
+
 // Inicializar datos
 using (var scope = app.Services.CreateScope())
 {
